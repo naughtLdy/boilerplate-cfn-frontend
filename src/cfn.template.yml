@@ -1,0 +1,97 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: infra CI/CD Pipeline
+
+Parameters:
+  Owner:
+    Type: String
+    Default: naughtldy
+  ProductName:
+    Type: String
+  Stage:
+    Type: String
+    Default: prod
+    AllowedValues:
+      - prod
+      - stg
+      - dev
+
+  # Domain
+  Domain:
+    Type: String
+  SubDomain:
+    Type: String
+    Default: www
+
+  # SSL
+  AcmCertificateArn:
+    Type: String
+
+Metadata:
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      - Label:
+          default: Configuration
+        Parameters:
+          - Owner
+          - ProductName
+          - Stage
+      - Label:
+          default: Domain
+        Parameters:
+          - Domain
+          - SubDomain
+      - Label:
+          default: SSL
+        Parameters:
+          - AcmCertificateArn
+    ParameterLabels:
+      Owner:
+        default: Owner
+      ProductName:
+        default: ProductName
+      Stage:
+        default: Stage
+
+      # Domain
+      Domain:
+        default: Domain
+      SubDomain:
+        default: SubDomain
+
+      # SSL
+      AcmCertificateArn:
+        default: Acm Certificate Arn
+
+Resources:
+  CloudFrontOAI:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: cloudfrontOAI.template.yml
+      Parameters:
+        Owner: !Ref Owner
+        ProductName: !Ref ProductName
+        Stage: !Ref Stage
+
+  CloudFront:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: cloudfront.template.yml
+      Parameters:
+        Owner: !Ref Owner
+        ProductName: !Ref ProductName
+        Stage: !Ref Stage
+        BucketFront: !GetAtt Bucket.Outputs.FrontBucketId
+        BucketFrontDomainName: !GetAtt Bucket.Outputs.FrontBucketDomainName
+        SubDomain: !Ref SubDomain
+        CloudFrontOAIFront: !GetAtt CloudFrontOAI.Outputs.CloudFrontOAIFront
+        AcmCertificateArn: !Ref AcmCertificateArn
+
+  Bucket:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: bucket.template.yml
+      Parameters:
+        Owner: !Ref Owner
+        ProductName: !Ref ProductName
+        Stage: !Ref Stage
+        CloudFrontOAIFront: !GetAtt CloudFrontOAI.Outputs.CloudFrontOAIFront

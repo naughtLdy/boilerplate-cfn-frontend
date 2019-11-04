@@ -1,0 +1,39 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: CloudFront OAI CI/CD Pipeline
+
+Parameters:
+  Owner:
+    Type: String
+  ProductName:
+    Type: String
+  Stage:
+    Type: String
+    Default: prod
+
+Metadata:
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      - Label:
+          default: Configuration
+        Parameters:
+          - Owner
+          - ProductName
+          - Stage
+    ParameterLabels:
+      Owner:
+        default: Owner
+      ProductName:
+        default: ProductName
+      Stage:
+        default: Stage
+
+Resources:
+  CloudFrontOAIFront:
+    Type: AWS::CloudFront::CloudFrontOriginAccessIdentity
+    Properties:
+      CloudFrontOriginAccessIdentityConfig:
+        Comment: !Sub access-identity-${ProductName}-front-${Stage}
+
+Outputs:
+  CloudFrontOAIFront:
+    Value: !Ref CloudFrontOAIFront

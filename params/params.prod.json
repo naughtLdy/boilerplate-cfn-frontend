@@ -1,0 +1,10 @@
+{
+  "Parameters": {
+    "Owner": "naughtLdy",
+    "ProductName": "naWorks",
+    "Stage": "prod",
+    "Domain": "na-works.jp",
+    "SubDomain": "www",
+    "AcmCertificateArn": ""
+  }
+}

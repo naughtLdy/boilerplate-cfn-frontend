@@ -1,0 +1,70 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: Bucket CI/CD Pipeline
+
+Parameters:
+  Owner:
+    Type: String
+  ProductName:
+    Type: String
+  Stage:
+    Type: String
+    Default: prod
+
+  # CloudFront
+  CloudFrontOAIFront:
+    Type: String
+
+Metadata:
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      - Label:
+          default: Configuration
+        Parameters:
+          - Owner
+          - ProductName
+          - Stage
+      - Label:
+          default: CloudFront OAI Configuration
+        Parameters:
+          - CloudFrontOAIFront
+    ParameterLabels:
+      Owner:
+        default: Owner
+      ProductName:
+        default: ProductName
+      Stage:
+        default: Stage
+
+      # CloudFront
+      CloudFrontOAIFront:
+        default: CloudFront OAI Front
+
+Resources:
+  FrontBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub ${Owner}-${ProductName}-front-${Stage}
+      AccessControl: Private
+      WebsiteConfiguration:
+        IndexDocument: index.html
+        ErrorDocument: error.html
+      VersioningConfiguration:
+        Status: Enabled
+
+  FrontBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref FrontBucket
+      PolicyDocument:
+        Statement:
+          - Action: s3:GetObject
+            Effect: Allow
+            Resource: !Sub arn:aws:s3:::${FrontBucket}/*
+            Principal:
+              AWS: !Sub arn:aws:iam::cloudfront:user/CloudFront Origin Access Identity ${CloudFrontOAIFront}
+
+Outputs:
+  FrontBucketId:
+    Value: !Ref FrontBucket
+  FrontBucketDomainName:
+    Value: !GetAtt FrontBucket.DomainName

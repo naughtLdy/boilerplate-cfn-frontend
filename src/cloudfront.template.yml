@@ -1,0 +1,132 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: CloudFront OAI CI/CD Pipeline
+
+Parameters:
+  Owner:
+    Type: String
+  ProductName:
+    Type: String
+  Stage:
+    Type: String
+    Default: prod
+
+  # Bucket
+  BucketFront:
+    Type: String
+  BucketFrontDomainName:
+    Type: String
+
+  # Domain
+  Domain:
+    Type: String
+  SubDomain:
+    Type: String
+    Default: www
+
+  # CloudFront
+  CloudFrontOAIFront:
+    Type: String
+
+  # SSL
+  AcmCertificateArn:
+    Type: String
+    Default: arn:aws:something:something:something
+
+Metadata:
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      - Label:
+          default: Configuration
+        Parameters:
+          - Owner
+          - ProductName
+          - Stage
+      - Label:
+          default: S3 Configuration
+        Parameters:
+          - BucketFront
+          - BucketFrontDomainName
+      - Label:
+          default: Domain Configuration
+        Parameters:
+          - Domain
+          - SubDomain
+      - Label:
+          default: CloudFront OAI Configuration
+        Parameters:
+          - CloudFrontOAIFront
+      - Label:
+          default: Acm Certificate Arn
+        Parameters:
+          - AcmCertificateArn
+    ParameterLabels:
+      Owner:
+        default: Owner
+      ProductName:
+        default: ProductName
+      Stage:
+        default: Stage
+
+      # Bucket
+      BucketFront:
+        default: Bucket Front Arn
+      BucketFrontDomainName:
+        default: Bucket Front DomainName
+
+      # Domain
+      Domain:
+        default: Domain
+      SubDomain:
+        default: SubDomain
+
+      # CloudFront
+      CloudFrontOAIFront:
+        default: CloudFront OAI Front
+
+      # SSL
+      AcmCertificateArn:
+        default: Acm Certificate Arn
+
+Resources:
+  CloudFrontFront:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        Aliases:
+          - !Sub ${SubDomain}.${Domain}
+        Comment: !Sub ${ProductName} frontend（${Stage}）
+        Origins:
+          - Id: !Sub S3-${Owner}-${ProductName}-front-${Stage}
+            DomainName: !Ref BucketFrontDomainName
+            S3OriginConfig:
+              OriginAccessIdentity: !Sub origin-access-identity/cloudfront/${CloudFrontOAIFront}
+        DefaultCacheBehavior:
+          TargetOriginId: !Sub S3-${Owner}-${ProductName}-front-${Stage}
+          ForwardedValues:
+            QueryString: true
+          ViewerProtocolPolicy: redirect-to-https
+        CacheBehaviors:
+          - TargetOriginId: !Sub S3-${Owner}-${ProductName}-front-${Stage}
+            ForwardedValues:
+              QueryString: true
+            ViewerProtocolPolicy: redirect-to-https
+            PathPattern: /*.ico
+            MinTTL: 31536000
+            MaxTTL: 31536000
+            DefaultTTL: 31536000
+        CustomErrorResponses:
+          - ErrorCachingMinTTL: 1
+            ErrorCode: 403
+            ResponseCode: 200
+            ResponsePagePath: "/index.html"
+          - ErrorCachingMinTTL: 1
+            ErrorCode: 404
+          - ErrorCachingMinTTL: 1
+            ErrorCode: 503
+        IPV6Enabled: false
+        Enabled: true
+        DefaultRootObject: index.html
+        HttpVersion: http2
+        ViewerCertificate:
+          AcmCertificateArn: !Ref AcmCertificateArn
+          SslSupportMethod: sni-only
