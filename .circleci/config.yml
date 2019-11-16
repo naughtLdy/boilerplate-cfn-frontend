@@ -8,7 +8,7 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          key:
+          keys:
             - npm-cache-{{ arch }}-{{ .Branch }}-{{ checksum "package-lock.json" }}
             - npm-cache-{{ arch }}-{{ .Branch }}
             - npm-cache
