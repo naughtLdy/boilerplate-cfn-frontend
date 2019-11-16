@@ -1,5 +1,9 @@
 {
-  "extends": [
-    "config:base"
-  ]
+  "extends": ["config:base", ":prConcurrentLimit10"],
+  "dependencies": {
+    "extends": [":labels(Renovate, dependencies)"]
+  },
+  "devDependencies": {
+    "extends": [":automergeMinor", ":labels(Renovate, devDependencies)"]
+  }
 }
