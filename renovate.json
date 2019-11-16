@@ -4,6 +4,10 @@
     "extends": [":labels(Renovate, dependencies)"]
   },
   "devDependencies": {
-    "extends": [":automergeMinor", ":labels(Renovate, devDependencies)"]
+    "extends": [
+      ":automergePatch",
+      ":automergeMinor",
+      ":labels(Renovate, devDependencies)"
+    ]
   }
 }
