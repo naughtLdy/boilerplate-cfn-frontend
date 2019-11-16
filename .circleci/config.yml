@@ -1,0 +1,30 @@
+version: 2
+jobs:
+  build-and-test:
+    working_directory: ~/repo
+    docker:
+      - image: circleci/node:12
+
+    steps:
+      - checkout
+      - restore_cache:
+          key:
+            - npm-cache-{{ arch }}-{{ .Branch }}-{{ checksum "package-lock.json" }}
+            - npm-cache-{{ arch }}-{{ .Branch }}
+            - npm-cache
+      - run:
+          name: package install
+          command: npm ci
+      - save_cache:
+          key: cache-{{ .Branch }}-{{ checksum "package-lock.json" }}
+          paths:
+            - ~/repo/node_modules
+      - run:
+          name: test
+          command: npm run test
+
+workflows:
+  version: 2
+  test-and-deploy:
+    jobs:
+      - build-and-test
