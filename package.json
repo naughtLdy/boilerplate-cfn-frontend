@@ -19,8 +19,7 @@
   },
   "lint-staged": {
     "*.(md|yml|json)": [
-      "prettier --write",
-      "git add"
+      "prettier --write"
     ]
   },
   "devDependencies": {
